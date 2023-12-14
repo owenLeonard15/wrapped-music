@@ -14,7 +14,7 @@ def encode_image(image_path):
     return base64.b64encode(image_file.read()).decode('utf-8')
 
 # Path to your image
-image_path = "path_to_your_image.jpg"
+image_path = "data/-ca8b-4b35-999a-611f48abebcc2F0ce3330e-54e7-4d07-a065-f245e1dbd2472FUntitled.png"
 
 # Getting the base64 string
 base64_image = encode_image(image_path)
@@ -49,8 +49,13 @@ payload = {
   "max_tokens": 300
 }
 
-# response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
 
 # print(response.json())
 
-# print(response.choices[0])
+# write response to json file
+with open('response.json', 'w') as f:
+  f.write(response.text)
+
+print(response.json()["choices"][0]["message"]["content"])
+
