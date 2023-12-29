@@ -26,12 +26,16 @@ def parse_response(response):
     return res
 
 
-# accepts image file path and returns json string of json object
-def parse_image(image_path):
+# accepts image file paths and returns json string of json objects
+def parse_images(image_paths):
 
+    base64_images = []
     # Getting the base64 string
-    base64_image = encode_image("data/spotify/" + image_path)
+    for image_path in image_paths:
+        base64_image = encode_image("data/spotify/" + image_path)
+        base64_images.append(base64_image)
 
+    # create payload including all base64 images
     headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {api_key}"
@@ -46,18 +50,20 @@ def parse_image(image_path):
             {
             "type": "text",
             "text": "What are the top 5 artists, top 5 songs, minutes listened, \
-and top genre from this spotify wrapped photo? \
-Make educated guesses for songs or artists that are incomplete. Return in json \
-format in the order listed above. If any values are missing return null for that value. \
-If you cannot parse the image for any reason return an empty json object."
+and top genre from each of the following spotify wrapped photos? \
+Make guesses for incomplete values. Return a list of valid json objects. \
+Each json object should contain a key value pair for each of top_artists, top_songs, minutes_listened, top_genre. \
+If any values are missing return null for that value. \
+If you cannot parse an image for any reason return an empty json object."
             },
-            {
+            # all base64 images
+            *[{
             "type": "image_url",
             "image_url": {
                 "url": f"data:image/jpeg;base64,{base64_image}",
                 "detail": "low"
             }
-            }
+            } for base64_image in base64_images]
         ]
         }
     ],
@@ -77,31 +83,15 @@ If you cannot parse the image for any reason return an empty json object."
 if __name__ == "__main__":
     image_paths = os.listdir("data/spotify")
 
-    # parse each image
-    complete_json = ""
-    # write to file every 100 images
-    for i, path in enumerate(tqdm(image_paths)):
-        # skip if cannot parse image
-        try:
-            parse_string = parse_image(path) + ","
-            complete_json += parse_string
-        except Exception as e:
-            print(e)
-            print("Error parsing image: " + path)
-            continue
+    parse_string = ""
+    # process 100 images at a time
+    for i in tqdm(range(0, len(image_paths), 100)):
+        # get 100 images
+        image_paths_100 = image_paths[i:i+100]
+        # parse the images
+        parse_string = parse_images(image_paths_100)
 
-        
-        if i % 100 == 0:
-            with open(f"response_{i}.json", 'w') as f:
-                # remove last comma
-                complete_json = complete_json[:-1]
-                f.write("["+complete_json+"]")
-            complete_json = ""
-
-
-    # remove last comma
-    complete_json = complete_json[:-1]
-
-    # write to file any remaining images
-    with open('response_final.json', 'w') as f:
-        f.write("["+complete_json+"]")
+        with open(f"response_{i}.json", 'w') as f:
+            # remove last comma
+            parse_string = parse_string[:-1]
+            f.write("["+parse_string+"]")
