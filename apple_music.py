@@ -49,11 +49,11 @@ def parse_images(image_paths):
             continue
         
         # make sure image is not too large (max 20MB)
-        if os.path.getsize("data/spotify/" + image_path) > 20000000:
+        if os.path.getsize("data/apple/" + image_path) > 20000000:
             print(f"Image {image_path} is too large. Skipping...")
             continue
 
-        base64_image = encode_image("data/spotify/" + image_path)
+        base64_image = encode_image("data/apple/" + image_path)
 
 
         base64_images.append(base64_image)
@@ -72,12 +72,11 @@ def parse_images(image_paths):
         "content": [
             {
             "type": "text",
-            "text": "List the top 5 artists, top 5 songs, minutes listened, \
-and top genre from each of the following spotify wrapped photos. \
-Complete any incomplete songs or artists with the full title or artist name. \
+            "text": "List the top 5 artists from each of the following apple music wrapped photos. \
+Complete any incomplete artists with the full title or artist name. \
 Return results in a list of valid json objects. \
-Each json object should contain a key value pair for each of top_artists, top_songs, minutes_listened, top_genre. \
-If any values are missing return null for that value. \
+Each json object should contain a key value pair with key top_artists and a list as the value. \
+If minutes listened is available include an additional key value minutes_listened. \
 Skip any images that cannot be parsed. \
 Do not include any additional text aside from the list of json objects."
             },
@@ -108,7 +107,7 @@ Do not include any additional text aside from the list of json objects."
 
 # entry point
 if __name__ == "__main__":
-    image_paths = os.listdir("data/spotify")
+    image_paths = os.listdir("data/apple")
 
     # use this to get all image paths from the skipped images file data/skipped/aaa_complete_list.txt instead of the data/spotify directory
     # image_paths = open("data/skipped/aaa_complete_list.txt", 'r').read().split("\n")
@@ -132,7 +131,7 @@ if __name__ == "__main__":
                 f.write("\n".join(batch_image_paths))
             continue
 
-        with open(f"response_{i}_3.json", 'w') as f:
+        with open(f"apple_response_{i}.json", 'w') as f:
             f.write(parsed_string)
 
         print(f"Tokens used: {tokens_left}")
